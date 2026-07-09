@@ -1,0 +1,12 @@
+# Facebook oturum çerezleri — ASLA paylaşma!
+fb_profil/
+
+# Loglar
+*.log
+fb_temizleyici_log.txt
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
