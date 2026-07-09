@@ -1,9 +1,10 @@
-# Facebook oturum çerezleri — ASLA paylaşma!
+# Facebook session cookies. NEVER share or commit this folder!
+fb_profile/
 fb_profil/
 
-# Loglar
+# Logs
 *.log
-fb_temizleyici_log.txt
+fb_post_cleaner_log.txt
 
 # Python
 __pycache__/
