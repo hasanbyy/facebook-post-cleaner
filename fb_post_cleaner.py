@@ -196,17 +196,28 @@ def menu_candidates(page):
 
 
 def card_info(button):
-    """Walks up from the menu button and returns the post card's text."""
+    """Walks up from the menu button and returns the card's text and unique id (permalink)."""
     return button.evaluate("""
         el => {
-            const card = el.closest("[role='article']");
-            if (card) return (card.innerText || '').slice(0, 500);
-            let n = el;
-            for (let i = 0; i < 12 && n.parentElement; i++) {
-                n = n.parentElement;
-                if ((n.textContent || '').length > 80) return (n.textContent || '').slice(0, 500);
+            let card = el.closest("[role='article']");
+            if (!card) {
+                let n = el;
+                for (let i = 0; i < 12 && n.parentElement; i++) {
+                    n = n.parentElement;
+                    if ((n.textContent || '').length > 80) { card = n; break; }
+                }
+                card = card || el.parentElement;
             }
-            return (n.textContent || '').slice(0, 500);
+            // Unique id: the post permalink inside the card (robust against identical text)
+            let id = null;
+            for (const a of card.querySelectorAll('a[href]')) {
+                const h = a.getAttribute('href') || '';
+                if (/pfbid|story_fbid|\\/posts\\/|\\/videos\\/|\\/photo/.test(h)) {
+                    id = h.split('?')[0].slice(0, 120);
+                    break;
+                }
+            }
+            return { text: (card.innerText || '').slice(0, 500), id: id };
         }
     """)
 
@@ -292,8 +303,9 @@ def main():
                 if args.limit and total >= args.limit:
                     break
                 try:
-                    text = card_info(button)
-                    key = hash(text[:200])
+                    info = card_info(button)
+                    text = info["text"]
+                    key = info.get("id") or hash(text[:200])
                     if key in skipped:
                         continue
 
@@ -342,6 +354,7 @@ def main():
                     else:
                         repeat_streak = 0
                         last_processed = key
+                        block_pauses = 0  # a new post went through: no block, reset counter
                     if repeat_streak >= 2:
                         block_pauses += 1
                         if block_pauses >= 3:
