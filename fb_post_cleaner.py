@@ -279,6 +279,7 @@ def main():
         fail_counts = {}      # card -> count of menu-open failures (transient)
         last_processed = None # silent-failure detection: same card processed repeatedly
         repeat_streak = 0     # means Facebook is rejecting the action
+        block_pauses = 0      # 15-minute back-offs taken; exit entirely after 3
 
         while True:
             if args.limit and total >= args.limit:
@@ -342,8 +343,16 @@ def main():
                         repeat_streak = 0
                         last_processed = key
                     if repeat_streak >= 2:
-                        print(">> WARNING: The same post appears to be processed repeatedly. "
-                              "Facebook may have applied a temporary action block; waiting 15 minutes...")
+                        block_pauses += 1
+                        if block_pauses >= 3:
+                            print(">> BLOCKED: Facebook keeps rejecting the action even after 3 "
+                                  "back-offs. Wait a few hours (ideally until tomorrow) and rerun. "
+                                  "Exiting.")
+                            ctx.close()
+                            return
+                        print(f">> WARNING: The same post appears to be processed repeatedly. "
+                              f"Facebook may have applied a temporary action block; waiting "
+                              f"15 minutes... (back-off {block_pauses}/3)")
                         time.sleep(900)
                         repeat_streak = 0
 
