@@ -277,6 +277,8 @@ def main():
         empty_rounds = 0
         skipped = set()       # permanently skipped cards (rule mismatch / no option)
         fail_counts = {}      # card -> count of menu-open failures (transient)
+        last_processed = None # silent-failure detection: same card processed repeatedly
+        repeat_streak = 0     # means Facebook is rejecting the action
 
         while True:
             if args.limit and total >= args.limit:
@@ -331,6 +333,19 @@ def main():
                         pause(1, 2)
                         break  # continue with a fresh button list
                     confirm_dialog(page, options)
+
+                    # Silent-failure check: an archived card should disappear;
+                    # if the same card keeps coming back, Facebook is rejecting the action
+                    if key == last_processed:
+                        repeat_streak += 1
+                    else:
+                        repeat_streak = 0
+                        last_processed = key
+                    if repeat_streak >= 2:
+                        print(">> WARNING: The same post appears to be processed repeatedly. "
+                              "Facebook may have applied a temporary action block; waiting 15 minutes...")
+                        time.sleep(900)
+                        repeat_streak = 0
 
                     total += 1
                     processed_this_round += 1
