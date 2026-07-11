@@ -50,6 +50,16 @@ On first run, log in to Facebook in the Chromium window that opens. The script d
 | `--limit N` | Process at most N posts (for trial runs; 0 = unlimited) |
 | `--include-profile-photos` | Also process profile/cover photo updates (default: protected) |
 
+## Field notes (from a real 2,600+ post cleanup)
+
+This tool was battle-tested on a real account: about 2,600 posts archived across three days. What to expect:
+
+- **Facebook has a daily action budget.** In our test it allowed roughly 500 to 2,000 archive actions per day, then started silently rejecting further actions. The tool detects this (an archived post must disappear from the timeline; if the same post keeps coming back, actions are being rejected), takes up to three 15-minute back-offs, then exits cleanly with a `BLOCKED` message.
+- **The fix is simply to rerun the next day.** Already-archived posts are gone from the timeline, so every rerun resumes exactly where the block hit. Run `start.bat` (or the same command) daily until you see "No eligible posts left".
+- **Expect around 200 posts per hour** while actions are being accepted.
+- Some posts have no archive option in their menu (certain tagged or special post types). The tool logs and skips them rather than getting stuck.
+- Heavy posting days are real: one day in our test had 100+ posts. The tool identifies posts by their permalink, so identical-looking posts do not confuse it.
+
 ## ⚠️ Things you should know
 
 1. **Use at your own risk.** Browser automation is a gray area under Facebook's Terms of Service; there is a risk of temporary action blocks on your account. The tool works at human pace to reduce this risk, but there are no guarantees.
@@ -98,6 +108,12 @@ python fb_post_cleaner.py --action archive --mode public
 ```
 
 İlk çalıştırmada açılan Chromium penceresinde Facebook'a giriş yap; script girişini otomatik algılar. İşlem uzun sürer (saatte yaklaşık 200 gönderi); pencereyi açık bırak. Yeniden başlattığında kaldığı derinlikten devam eder.
+
+### Saha notları (2.600+ gönderilik gerçek temizlikten)
+
+- **Facebook'un günlük işlem bütçesi var.** Testimizde günde yaklaşık 500 ile 2.000 arşivleme kabul etti, sonrasını sessizce reddetmeye başladı. Araç bunu fark eder (arşivlenen gönderi zaman tünelinden kaybolmalıdır; aynı gönderi geri gelmeye devam ediyorsa işlemler reddediliyordur), 15'er dakikalık üç mola dener, düzelmezse temiz şekilde kapanır.
+- **Çözüm: ertesi gün yeniden çalıştır.** Arşivlenenler zaman tünelinden kalktığı için her koşu tam kaldığı yerden devam eder. "No eligible posts left" görene kadar her gün `start.bat` çalıştır.
+- Bazı gönderilerin menüsünde arşiv seçeneği yoktur (etiketli veya özel türler); araç bunları loglayıp atlar, takılmaz.
 
 ### ⚠️ Bilmen gerekenler
 
